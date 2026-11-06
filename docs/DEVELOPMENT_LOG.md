@@ -80,3 +80,30 @@ This log records what was actually done, why decisions were made, and what evide
 2. Add payment-request persistence with strict ownership and status-transition controls.
 3. Test token discovery and a dry quote through an authenticated deployment request.
 4. Build hosted payment links and payment-status tracking.
+
+
+## 2026-11-06 — Merchant authentication and payment-request foundation
+
+### Implemented
+- Added Supabase SSR session refresh middleware for the Next.js 15 app.
+- Added email/password merchant registration and sign-in actions and pages.
+- Added the PKCE email-confirmation callback route.
+- Added a protected merchant dashboard using server-verified `auth.getUser()`.
+- Added merchant profile upsert under the existing row-level security policies.
+- Added payment-request creation with server-side NEAR Intents token lookup.
+- Converts decimal amounts to atomic units using integer arithmetic; validates token precision and the database's 78-digit numeric limit.
+- Added recent payment-request listing and request status display.
+- Added responsive styling and sign-in/register entry points on the landing page.
+
+### Security boundaries
+- Browser and server Supabase clients use only the publishable key; no service-role key was added.
+- Payment requests are created through authenticated Supabase sessions and existing RLS policies.
+- Amount decimals and asset metadata are resolved again on the server; client-supplied token metadata is not trusted.
+- The dashboard cannot update payment status or create payment attempts/events.
+- Creating a payment request does not call the executable NEAR Intents quote flow, create a deposit address, or move funds.
+- Public hosted checkout is not implemented yet. The dashboard explicitly labels the reserved checkout URL as inactive.
+
+### Verification status
+- GitHub source commits completed.
+- Vercel deployment for the latest commit is building; GitHub's Vercel status is pending.
+- End-to-end registration, email confirmation, sign-in, RLS writes, and payment-request creation still require a successful deployment and live browser test.
