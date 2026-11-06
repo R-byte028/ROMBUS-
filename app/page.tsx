@@ -99,7 +99,10 @@ export default function Home() {
         <a href="/" style={{ color: "inherit", textDecoration: "none", fontSize: 22, fontWeight: 800, letterSpacing: "-1px" }}>
           ROMBUS<span style={{ color: "var(--orange)" }}>.</span>
         </a>
-        <div className="muted" style={{ fontSize: 13 }}>Cross-chain payments, simplified</div>
+        <nav style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 13 }}>
+          <a href="/login" className="muted" style={{ textDecoration: "none" }}>Sign in</a>
+          <a href="/signup" className="nav-cta">Create account</a>
+        </nav>
       </header>
 
       <section style={{ maxWidth: 760, margin: "0 auto 42px", textAlign: "center" }}>
