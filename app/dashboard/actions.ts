@@ -26,7 +26,7 @@ function toAtomicAmount(value: string, decimals: number): string {
   if (fraction.length > decimals) throw new Error("precision");
   const padded = (fraction + "0".repeat(decimals)).slice(0, decimals);
   const atomic = BigInt(whole) * (10n ** BigInt(decimals)) + BigInt(padded || "0");
-  if (atomic <= 0n) throw new Error("amount");
+  if (atomic <= 0n || atomic.toString().length > 78) throw new Error("amount");
   return atomic.toString();
 }
 
