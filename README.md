@@ -64,7 +64,7 @@ Exact endpoints, payloads, supported networks, assets, and operational behavior 
 
 ## Current status
 
-The repository has been created and the project documentation foundation is being established. Implementation and test status will be updated as work is completed. See [CHANGELOG.md](CHANGELOG.md) and [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md).
+**Application scaffold committed.** The repository now contains a Next.js 15 / React 19 / TypeScript application, a responsive ROMBUS quote-preview interface, a public token-discovery proxy, and a server-only authenticated 1Click dry-quote endpoint. The quote endpoint forces `dry: true`; it cannot create a deposit address or initiate a payment. The API credential is read only from `NEAR_INTENTS_JWT` on the server. The app has not yet been built in CI, connected to a deployment, or tested against a live authenticated quote. See [CHANGELOG.md](CHANGELOG.md) and [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md).
 
 ## License
 
