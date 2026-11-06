@@ -15,7 +15,7 @@ type ProviderToken = {
 const requestSchema = z.object({
   title: z.string().trim().min(1).max(120),
   description: z.string().trim().max(1000).optional(),
-  amount: z.string().regex(/^\\d+(?:\\.\\d+)?$/).max(120),
+  amount: z.string().regex(/^\d+(?:\.\d+)?$/).max(120),
   destinationAssetId: z.string().min(1).max(300),
   recipientAddress: z.string().trim().min(2).max(200),
   expiry: z.enum(["never", "1", "24", "168"]),
