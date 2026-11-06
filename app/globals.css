@@ -29,3 +29,9 @@ button { cursor: pointer; }
 .primary { background: var(--orange); color: #17100a; border: 0; border-radius: 10px; padding: 12px 17px; font-weight: 700; }
 .primary:disabled { opacity: .5; cursor: not-allowed; }
 .muted { color: var(--muted); }
+
+.two-col { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important; }
+@media (max-width: 560px) {
+  .shell { width: min(100% - 28px, 1180px); }
+  .two-col { grid-template-columns: minmax(0, 1fr) !important; }
+}
