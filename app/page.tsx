@@ -128,7 +128,7 @@ export default function Home() {
         {tokenError ? <p style={{ color: "#ff9b79", fontSize: 13 }}>{tokenError}</p> : null}
 
         <form onSubmit={requestQuote}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <div className="two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <label style={{ display: "block", fontSize: 13, color: "var(--muted)" }}>You pay with
               <select className="field" style={{ display: "block", marginTop: 8 }} value={originAsset} onChange={(e) => setOriginAsset(e.target.value)} required>
                 {tokens.map((t) => <option key={t.assetId} value={t.assetId}>{t.symbol || t.name || t.assetId} {t.blockchain ? `· ${t.blockchain}` : ""}</option>)}
