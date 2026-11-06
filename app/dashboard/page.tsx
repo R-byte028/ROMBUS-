@@ -54,7 +54,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       </section>
 
       {params.error && errors[params.error] ? <p className="error notice-panel" role="alert">{errors[params.error]}</p> : null}
-      {params.created ? <div className="notice-panel"><strong>Payment request created.</strong><p className="muted">Your shareable link:</p><a href={`/checkout/${params.created}`}>{`${process.env.NEXT_PUBLIC_APP_URL || ""}/checkout/${params.created}`}</a><p className="muted fine-print">Checkout is not active yet. This link is a placeholder until the hosted checkout flow is implemented.</p></div> : null}
+      {params.created ? <div className="notice-panel"><strong>Payment request saved.</strong><p className="muted">Reserved checkout URL — not active yet:</p><code>{`${process.env.NEXT_PUBLIC_APP_URL || "https://your-rombus-domain"}/checkout/${params.created}`}</code><p className="muted fine-print">The request is stored securely. Public checkout and sharing will be enabled in the next stage.</p></div> : null}
 
       <div className="dashboard-grid">
         <section className="panel dashboard-card">
