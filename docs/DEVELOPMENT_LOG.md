@@ -57,3 +57,26 @@ This log records what was actually done, why decisions were made, and what evide
 2. Configure the API credential securely in the deployment environment.
 3. Verify live token discovery and an authenticated `dry: true` quote.
 4. Add persistence for merchant payment requests, then hosted checkout and payment status tracking.
+
+
+## 2026-11-06 — Vercel environment and first successful build
+
+### Completed
+- Confirmed the Vercel project contains `NEAR_INTENTS_JWT` as an encrypted server-side environment variable for Development, Preview, and Production.
+- Upgraded Next.js from 15.5.6 to 15.5.9 after the initial build warned that the earlier patch release had a known security issue.
+- Changed the TypeScript target to ES2020 so BigInt-based token amount conversion compiles.
+- Confirmed the latest main-branch deployment reached Vercel state `READY`.
+- Build output confirms the landing page and both API routes were included.
+
+### Verification boundaries
+- The first build failed because TypeScript targeted ES2017; this was corrected.
+- The later build completed successfully.
+- Vercel SSO deployment protection prevented an unauthenticated external request from being used to validate the live API endpoints.
+- The API key is configured in Vercel, but an authenticated `GET /v0/tokens` and `dry: true` quote have not yet been confirmed.
+- No real payment or deposit address has been created.
+
+### Next
+1. Confirm the ROMBUS Supabase organization and create its project.
+2. Add payment-request persistence with strict ownership and status-transition controls.
+3. Test token discovery and a dry quote through an authenticated deployment request.
+4. Build hosted payment links and payment-status tracking.
