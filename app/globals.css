@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --bg: #090b0f;
+  --panel: #11151c;
+  --panel-soft: #151b24;
+  --line: #252d38;
+  --muted: #8b96a6;
+  --text: #f4f6f8;
+  --orange: #ff7a1a;
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  margin: 0;
+  background: radial-gradient(ellipse at 85% 0%, rgba(255,122,26,.10), transparent 32%), var(--bg);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+::selection { background: rgba(255,122,26,.3); }
+.shell { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+.panel { background: rgba(17,21,28,.92); border: 1px solid var(--line); border-radius: 18px; }
+.field { width: 100%; border: 1px solid var(--line); background: #0c1016; color: var(--text); border-radius: 10px; padding: 12px 13px; outline: none; }
+.field:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,122,26,.12); }
+.primary { background: var(--orange); color: #17100a; border: 0; border-radius: 10px; padding: 12px 17px; font-weight: 700; }
+.primary:disabled { opacity: .5; cursor: not-allowed; }
+.muted { color: var(--muted); }
