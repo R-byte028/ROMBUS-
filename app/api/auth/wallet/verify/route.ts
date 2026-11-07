@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     const now = new Date();
     const { data: challenge, error: challengeError } = await admin
       .from("wallet_auth_challenges")
-      .select("id, wallet_address, chain_id, nonce, domain, uri, purpose, expires_at, consumed_at, created_at")
+      .select("id, wallet_address, chain_id, nonce, domain, uri, purpose, user_id, expires_at, consumed_at, created_at")
       .eq("nonce", parsed.data.nonce)
       .eq("wallet_address", address.toLowerCase())
       .is("consumed_at", null)
@@ -82,7 +82,9 @@ export async function POST(request: NextRequest) {
 
     if (challenge.purpose === "link") {
       const { data: authData, error: authError } = await supabase.auth.getUser();
-      if (authError || !authData.user) return NextResponse.json({ error: "Your session expired. Sign in again before linking a wallet." }, { status: 401 });
+      if (authError || !authData.user || challenge.user_id !== authData.user.id) {
+        return NextResponse.json({ error: "Your merchant session changed or expired. Start wallet linking again." }, { status: 401 });
+      }
 
       const { error: linkError } = await admin.from("merchant_profiles").upsert({
         id: authData.user.id,
