@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { signOut } from "@/app/auth/actions";
 import { createClient } from "@/lib/supabase/server";
@@ -21,6 +22,12 @@ async function getTokens(): Promise<Token[]> {
 
 export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ error?: string; created?: string }> }) {
   const params = await searchParams;
+  const requestHeaders = await headers();
+  const requestHost = requestHeaders.get("x-forwarded-host")?.split(",")[0]?.trim() || requestHeaders.get("host");
+  const requestProtocol = requestHeaders.get("x-forwarded-proto")?.split(",")[0]?.trim() || "https";
+  const appBaseUrl = requestHost
+    ? `${requestProtocol}://${requestHost}`
+    : (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\\/$/, "");
   const supabase = await createClient();
   const { data: authData, error: authError } = await supabase.auth.getUser();
   if (authError || !authData.user) redirect("/login");
@@ -55,7 +62,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       </section>
 
       {params.error && errors[params.error] ? <p className="error notice-panel" role="alert">{errors[params.error]}</p> : null}
-      {params.created ? <div className="notice-panel"><strong>Payment request saved.</strong><p className="muted">Share this payment link:</p><code>{`${process.env.NEXT_PUBLIC_APP_URL || "https://your-rombus-domain"}/checkout/${params.created}`}</code><p className="muted fine-print">Customers can preview a quote, confirm, and receive deposit instructions. A request is marked paid only after NEAR Intents confirms settlement.</p></div> : null}
+      {params.created ? <div className="notice-panel"><strong>Payment request saved.</strong><p className="muted">Share this payment link:</p><code>{`${appBaseUrl}/checkout/${params.created}`}</code><p className="muted fine-print">Customers can preview a quote, confirm, and receive deposit instructions. A request is marked paid only after NEAR Intents confirms settlement.</p></div> : null}
 
       <div className="dashboard-grid">
         <section className="panel dashboard-card">
