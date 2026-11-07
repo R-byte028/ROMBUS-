@@ -18,10 +18,12 @@ export async function POST(request: NextRequest) {
     const parsed = schema.safeParse(await request.json());
     if (!parsed.success) return NextResponse.json({ error: "Invalid wallet details." }, { status: 400 });
 
+    let linkedUserId: string | null = null;
     if (parsed.data.purpose === "link") {
       const supabase = await createClient();
       const { data, error } = await supabase.auth.getUser();
       if (error || !data.user) return NextResponse.json({ error: "Sign in before linking a wallet." }, { status: 401 });
+      linkedUserId = data.user.id;
     }
 
     const host = request.nextUrl.host;
@@ -41,6 +43,7 @@ export async function POST(request: NextRequest) {
       domain: host,
       uri,
       purpose: parsed.data.purpose,
+      user_id: linkedUserId,
       expires_at: expiresAt.toISOString(),
     });
     if (error) {
