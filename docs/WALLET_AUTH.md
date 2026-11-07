@@ -17,7 +17,7 @@
 2. The server creates a random 128-bit nonce with a five-minute expiry and stores it in `wallet_auth_challenges`.
 3. The server returns a SIWE message bound to the current deployment host, URI, wallet address, chain ID, nonce and expiry.
 4. The wallet signs the message with `personal_sign`.
-5. The server parses and verifies the SIWE message, checks all stored fields and time bounds, then atomically consumes the nonce.
+5. The server compares the returned SIWE payload byte-for-byte with the exact message stored for that challenge, recovers the EVM signer from the signature, checks the signer address and expiry, then atomically consumes the nonce.
 6. For a new wallet, the server creates an internal Supabase Auth identity with a non-routable `wallet.rombus.invalid` email address. No email is sent or required. It generates and immediately consumes a one-time magic-link token server-side to establish the normal Supabase session.
 7. The merchant profile stores the normalized wallet address. Existing RLS policies continue to use the Supabase Auth user ID.
 
@@ -27,7 +27,7 @@ The synthetic email is an internal Supabase Auth compatibility detail only. It i
 
 - Nonces are cryptographically random, expire after five minutes, and are single-use.
 - Nonces are bound to wallet address, chain ID, host, URI and purpose.
-- Signature verification runs on the server.
+- Signature verification runs on the server using EIP-191 message recovery; the signed payload must exactly match the server-issued SIWE message.
 - Nonce consumption is an atomic database update, preventing replay.
 - Challenge records are inaccessible to `anon` and `authenticated`; only the server's Supabase secret client can access them.
 - Wallet addresses are unique across merchant profiles (case-insensitive).
