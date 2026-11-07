@@ -119,3 +119,7 @@ a { color: var(--orange); }
 .checkout-footer { max-width: 1020px; margin: 24px auto 0; }
 @media (max-width: 820px) { .checkout-layout { grid-template-columns: 1fr; margin-top: 28px; } }
 @media (max-width: 560px) { .checkout-meta div { align-items: flex-start; } .quote-line { align-items: flex-start; } }
+
+.wallet-login { display: grid; gap: 10px; }
+.wallet-login .primary, .wallet-login .quiet-button { width: 100%; min-height: 44px; }
+.wallet-login .fine-print { margin: 0; }
