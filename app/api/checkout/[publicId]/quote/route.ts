@@ -28,7 +28,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!parsed.success) return NextResponse.json({ error: "Enter a valid source asset and refund address." }, { status: 400 });
 
   const payment = await getCheckoutRequest(publicId);
-  if (!payment) return NextResponse.json({ error: "This payment request is unavailable, paid, or expired." }, { status: 404 });
+  if (!payment) return NextResponse.json({ error: "This payment request does not exist." }, { status: 404 });
+  if (payment.status !== "open" || (payment.expires_at !== null && Date.parse(payment.expires_at) <= Date.now())) {
+    return NextResponse.json({ error: "This payment request is no longer payable." }, { status: 409 });
+  }
 
   try {
     const tokens = await getProviderTokens();
