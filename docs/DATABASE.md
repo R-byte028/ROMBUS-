@@ -22,7 +22,7 @@ The checkout migrations add narrowly scoped \`SECURITY DEFINER\` RPCs with a fix
 - \`get_public_payment_request\`: returns only the payment details needed for a public link identified by its random UUID.
 - \`get_public_payment_attempt\`: returns deposit instructions and state for a random attempt UUID.
 - \`create_public_payment_attempt\`: creates a pending attempt after rechecking that the request is open and unexpired; it also prevents overlapping active attempts.
-- \`store_public_payment_quote\`: persists the executable provider quote and deposit instructions.
+- \`store_public_payment_quote\`: persists the executable provider quote, provider signature, and full response for dispute/audit evidence. Status polling also retains the full provider status response, including settlement transaction details.
 - \`fail_public_payment_attempt\`: closes a pending attempt when quote creation fails.
 - \`apply_public_payment_status\`: maps trusted provider states to ROMBUS states and marks the request paid only on provider \`SUCCESS\`.
 
