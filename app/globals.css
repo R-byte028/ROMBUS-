@@ -122,4 +122,6 @@ a { color: var(--orange); }
 
 .wallet-login { display: grid; gap: 10px; }
 .wallet-login .primary, .wallet-login .quiet-button { width: 100%; min-height: 44px; }
+.wallet-login-compact { display: inline-flex; }
+.wallet-login-compact .quiet-button { width: auto; min-height: 34px; white-space: nowrap; }
 .wallet-login .fine-print { margin: 0; }
