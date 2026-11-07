@@ -7,11 +7,9 @@ ROMBUS is an intent-powered cross-chain payment infrastructure concept. It aims 
 > **Development status:** Early-stage hackathon project. This repository is the source of truth for implementation progress. No payment route, asset, wallet, or settlement flow is considered supported until it has been integrated and tested end to end.
 
 ## Problem
-
 Web3 payments often require the payer to hold the exact token on the exact network requested by the recipient. This creates friction for customers, merchants, and applications operating across ecosystems.
 
 ## Proposed solution
-
 ROMBUS is being built around payment requests and hosted checkout:
 
 1. A recipient creates a payment request with an amount, destination asset/network, recipient address, and expiry.
@@ -22,50 +20,44 @@ ROMBUS is being built around payment requests and hosted checkout:
 6. ROMBUS tracks the transfer and marks the request paid only after settlement is verified.
 
 ## Core principles
-
 - **Non-custodial:** users retain control of their wallets and explicitly authorise payments.
+- **Wallet-first merchant access:** new merchants authenticate by signing a wallet message, not by creating an email/password account.
+- **Accountless checkout:** customers can open public payment links without registering with ROMBUS.
 - **Evidence-based status:** a payment is not marked complete merely because a deposit was initiated.
 - **Route transparency:** only routes, assets, and networks confirmed by the live integration will be presented as available.
 - **Secure by design:** provider credentials and secrets stay on the server.
-- **Documented development:** decisions, tests, limitations, and changes are recorded in this repository.
 
 ## Planned MVP
-
-- Payment request creation
+- Wallet-first merchant authentication
+- Merchant dashboard and payment request creation
 - Shareable hosted checkout
 - Live quote retrieval
 - Payer-directed deposit to a 1Click deposit address
 - Settlement status tracking and verification
 - Expiry and failure handling
 - Responsive merchant and checkout interfaces
-- Judge-facing setup and test instructions
-
-A developer API and authorised AI-agent payment flows are longer-term directions, not claims about the current MVP.
+- Developer API and authorised AI-agent payment flows as longer-term directions
 
 ## Technology direction
-
 - Next.js, TypeScript, and Tailwind CSS
-- Supabase for persistence and authentication, subject to implementation
-- Vercel for hosting, subject to deployment
+- Supabase for persistence and authentication
+- Vercel for hosting
+- SIWE (EIP-4361) for initial EVM wallet proof
 - NEAR Intents 1Click for supported cross-chain payment routes
 
-Exact endpoints, payloads, supported networks, assets, and operational behavior will be documented only after checking current provider documentation and testing the integration.
-
 ## Repository guide
-
 - [Hackathon evaluator guide](HACKATHON.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Development log](docs/DEVELOPMENT_LOG.md)
 - [Technical decisions](docs/TECHNICAL_DECISIONS.md)
+- [Wallet authentication](docs/WALLET_AUTH.md)
 - [NEAR Intents integration notes](docs/NEAR_INTENTS_INTEGRATION.md)
 - [Testing](docs/TESTING.md)
 - [Security](docs/SECURITY.md)
 - [Changelog](CHANGELOG.md)
 
 ## Current status
-
-**Application scaffold committed.** The repository now contains a Next.js 15 / React 19 / TypeScript application, a responsive ROMBUS quote-preview interface, a public token-discovery proxy, and a server-only authenticated 1Click dry-quote endpoint. The quote endpoint forces `dry: true`; it cannot create a deposit address or initiate a payment. The API credential is read only from `NEAR_INTENTS_JWT` on the server. The app has not yet been built in CI, connected to a deployment, or tested against a live authenticated quote. See [CHANGELOG.md](CHANGELOG.md) and [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md).
+The application includes a responsive ROMBUS quote-preview interface, a public token-discovery proxy, a server-only 1Click quote endpoint, merchant payment requests, and public hosted checkout with payment-attempt tracking. Wallet-first merchant authentication is being introduced on a feature branch. It uses SIWE challenge/verification routes and preserves legacy email accounts for migration. The first connector is injected EVM wallets; WalletConnect and non-EVM wallet authentication remain future work. No real-funds end-to-end payment test is claimed.
 
 ## License
-
 License not yet selected. All rights reserved by default until a license is added.
