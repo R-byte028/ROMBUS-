@@ -127,20 +127,21 @@ export async function POST(request: NextRequest) {
 
       if (!createError && created.user) {
         userId = created.user.id;
-        const { error: profileError } = await admin.from("merchant_profiles").upsert({
-          id: userId,
-          wallet_address: address.toLowerCase(),
-          wallet_chain_id: Number(challenge.chain_id),
-          display_name: walletDisplayName(address),
-          business_name: walletDisplayName(address),
-        });
-        if (profileError) throw new Error("Could not create the merchant profile.");
       } else {
         // A previous interrupted attempt may already have created this wallet identity.
-        const { data: generated, error: generateError } = await admin.auth.admin.generateLink({ type: "magiclink", email });
-        if (generateError || !generated.user) throw new Error("Could not create or recover the wallet account.");
-        userId = generated.user.id;
+        const { data: generatedUser, error: recoverError } = await admin.auth.admin.generateLink({ type: "magiclink", email });
+        if (recoverError || !generatedUser.user) throw new Error("Could not create or recover the wallet account.");
+        userId = generatedUser.user.id;
       }
+
+      const { error: profileError } = await admin.from("merchant_profiles").upsert({
+        id: userId,
+        wallet_address: address.toLowerCase(),
+        wallet_chain_id: Number(challenge.chain_id),
+        display_name: walletDisplayName(address),
+        business_name: walletDisplayName(address),
+      });
+      if (profileError) throw new Error("Could not create the merchant profile.");
     }
 
     // Generate and immediately consume a one-time link internally. No email is sent or required.
