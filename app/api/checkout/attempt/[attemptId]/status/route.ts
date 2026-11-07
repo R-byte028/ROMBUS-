@@ -45,6 +45,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ att
     const { data: updated, error: updateError } = await admin.rpc("apply_public_payment_status", {
       p_attempt_id: attemptId,
       p_provider_status: providerStatus,
+      p_provider_response: data as Record<string, unknown>,
     });
     if (updateError) return NextResponse.json({ status: attempt.status, providerStatus: attempt.provider_status, refreshing: true }, { headers: { "Cache-Control": "no-store" } });
 
