@@ -14,6 +14,18 @@ export type CheckoutRequest = {
   expires_at: string | null;
 };
 
+export type ActiveCheckoutAttempt = {
+  id: string;
+  status: string;
+  provider_status: string | null;
+  source_asset_id: string;
+  source_amount_atomic: string;
+  destination_amount_atomic: string;
+  deposit_address: string;
+  deposit_memo: string | null;
+  provider_deadline: string;
+};
+
 export type ProviderToken = {
   assetId: string;
   symbol?: string;
@@ -28,6 +40,13 @@ export async function getCheckoutRequest(publicId: string): Promise<CheckoutRequ
   const { data, error } = await supabase.rpc("get_public_payment_request", { p_public_id: publicId });
   if (error || !Array.isArray(data) || !data.length) return null;
   return data[0] as CheckoutRequest;
+}
+
+export async function getActiveCheckoutAttempt(publicId: string): Promise<ActiveCheckoutAttempt | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_active_public_payment_attempt", { p_public_id: publicId });
+  if (error || !Array.isArray(data) || !data.length) return null;
+  return data[0] as ActiveCheckoutAttempt;
 }
 
 export async function getProviderTokens(): Promise<ProviderToken[]> {
