@@ -27,7 +27,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const requestProtocol = requestHeaders.get("x-forwarded-proto")?.split(",")[0]?.trim() || "https";
   const appBaseUrl = requestHost
     ? `${requestProtocol}://${requestHost}`
-    : (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\\/$/, "");
+    : (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000");
   const supabase = await createClient();
   const { data: authData, error: authError } = await supabase.auth.getUser();
   if (authError || !authData.user) redirect("/login");
