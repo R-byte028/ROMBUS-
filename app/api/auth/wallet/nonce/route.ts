@@ -2,10 +2,9 @@ import { randomBytes } from "node:crypto";
 import { getAddress, isAddress } from "ethers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { SiweMessage } from "siwe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { isAllowedWalletAuthHost } from "@/lib/auth/wallet";
+import { buildSiweMessage, isAllowedWalletAuthHost } from "@/lib/auth/wallet";
 
 const schema = z.object({
   address: z.string().refine(isAddress, "Invalid EVM wallet address"),
@@ -34,6 +33,18 @@ export async function POST(request: NextRequest) {
     const issuedAt = new Date();
     const expiresAt = new Date(issuedAt.getTime() + 5 * 60 * 1000);
     const uri = request.nextUrl.origin;
+    const message = buildSiweMessage({
+      domain: host,
+      address,
+      statement: parsed.data.purpose === "link"
+        ? "Link this wallet to your ROMBUS merchant account. This signature does not move funds."
+        : "Sign in to ROMBUS. This signature does not move funds.",
+      uri,
+      chainId: parsed.data.chainId,
+      nonce,
+      issuedAt: issuedAt.toISOString(),
+      expirationTime: expiresAt.toISOString(),
+    });
     const admin = createAdminClient();
 
     const { error } = await admin.from("wallet_auth_challenges").insert({
@@ -44,26 +55,13 @@ export async function POST(request: NextRequest) {
       uri,
       purpose: parsed.data.purpose,
       user_id: linkedUserId,
+      message,
       expires_at: expiresAt.toISOString(),
     });
     if (error) {
       console.error("Wallet challenge creation failed:", error.message);
       return NextResponse.json({ error: "Could not start wallet verification. Please try again." }, { status: 500 });
     }
-
-    const message = new SiweMessage({
-      domain: host,
-      address,
-      statement: parsed.data.purpose === "link"
-        ? "Link this wallet to your ROMBUS merchant account. This signature does not move funds."
-        : "Sign in to ROMBUS. This signature does not move funds.",
-      uri,
-      version: "1",
-      chainId: parsed.data.chainId,
-      nonce,
-      issuedAt: issuedAt.toISOString(),
-      expirationTime: expiresAt.toISOString(),
-    }).prepareMessage();
 
     return NextResponse.json({ message, nonce, expiresAt: expiresAt.toISOString() }, {
       headers: { "Cache-Control": "no-store" },
