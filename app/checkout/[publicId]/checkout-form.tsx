@@ -32,7 +32,7 @@ type StatusInfo = { status: string; providerStatus: string | null };
 type InjectedWallet = { request(args: { method: string; params?: unknown[] }): Promise<unknown> };
 
 function isEvmNetwork(value?: string) {
-  return /ethereum|\\beth\\b|base|arbitrum|optimism|polygon|\\bbnb\\b|binance smart chain|avalanche|\\bavax\\b|linea|scroll|zksync|mantle|gnosis|blast|celo/i.test(value || "");
+  return /ethereum|\beth\b|base|arbitrum|optimism|polygon|\bbnb\b|binance smart chain|avalanche|\bavax\b|linea|scroll|zksync|mantle|gnosis|blast|celo/i.test(value || "");
 }
 
 export default function CheckoutForm({ publicId, tokens, destinationSymbol, initialAttempt }: {
