@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getCheckoutRequest, getNearIntentsHeaders, getProviderTokens, isRecord } from "@/lib/checkout";
+import { getCheckoutRequest, getNearIntentsHeaders, getProviderTokens, getQuoteDeadline, isRecord } from "@/lib/checkout";
 
 export const runtime = "nodejs";
 
@@ -69,12 +69,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       body: JSON.stringify({
         dry: false,
         swapType: "EXACT_OUTPUT",
+        slippageTolerance: 100,
+        depositType: "ORIGIN_CHAIN",
+        refundType: "ORIGIN_CHAIN",
+        recipientType: "DESTINATION_CHAIN",
+        deadline: getQuoteDeadline(source),
         originAsset: source.assetId,
         destinationAsset: destination.assetId,
         amount: payment.amount_atomic,
         recipient: payment.recipient_address,
         refundTo: parsed.data.refundAddress,
-        slippageTolerance: 100,
       }),
       cache: "no-store",
     });
