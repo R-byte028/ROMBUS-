@@ -13,6 +13,8 @@
 - Avoid logging secrets, authentication tokens, seed phrases, or unnecessary personal data.
 
 ## Payment integrity
+
+- Two narrowly scoped public-link lookup RPCs intentionally use `SECURITY DEFINER` and are executable by `anon` only. They return a small, fixed set of fields for an unguessable UUID and do not grant table-level reads. Supabase's advisor flags public `SECURITY DEFINER` execution; this is an intentional trade-off for public checkout and should be re-reviewed if the public-link design changes. All mutation RPCs and the individual-attempt lookup remain server-only.
 - Bind each quote and transfer to one ROMBUS payment request.
 - Use \`EXACT_OUTPUT\` for a merchant-fixed destination amount; the requested amount is denominated in destination-asset atomic units.
 - Use the provider's \`dry: true\` quote for preview and create a deposit address only after explicit payer confirmation with \`dry: false\`.
