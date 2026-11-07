@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       headers: {
         "content-type": "application/json",
         accept: "application/json",
-        authorization: \`Bearer \${jwt}\`,
+        authorization: "Bearer " + jwt,
       },
       body: JSON.stringify({ ...parsed.data, dry: true }),
       cache: "no-store",
