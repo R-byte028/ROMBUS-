@@ -44,5 +44,5 @@ A request starts as \`open\` and becomes \`paid\` only after the authenticated p
 
 - \`20261106200500_initial_payment_core.sql\`
 - \`20261106200600_index_payment_event_attempt_fk.sql\`
-- \`20261107010000_public_checkout_payment_lifecycle.sql\`
-- \`20261107010100_restrict_public_checkout_writes.sql\`
+- \`20261107015256_public_checkout_payment_lifecycle.sql\`
+- \`20261107015305_restrict_public_checkout_writes.sql\`
