@@ -66,7 +66,31 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const root = data && typeof data === "object" ? data as Record<string, unknown> : null;
     const quote = root?.quote && typeof root.quote === "object" ? root.quote as Record<string, unknown> : null;
     if (!providerResponse.ok || !quote || typeof quote.amountInFormatted !== "string" || typeof quote.amountOutFormatted !== "string") {
-      return NextResponse.json({ error: "NEAR Intents could not quote this asset pair or wallet address." }, { status: 422 });
+      const rawError = typeof root?.message === "string"
+        ? root.message
+        : typeof root?.error === "string"
+          ? root.error
+          : root?.error && typeof root.error === "object" && typeof (root.error as Record<string, unknown>).message === "string"
+            ? (root.error as Record<string, unknown>).message as string
+            : "Provider returned no usable quote.";
+      // Keep diagnostics useful without recording wallet addresses or the full request/response.
+      const safeProviderError = rawError
+        .replace(/0x[a-fA-F0-9]{40}/g, "[EVM address]")
+        .replace(/[1-9A-HJ-NP-Za-km-z]{32,64}/g, "[chain address]")
+        .slice(0, 240);
+      console.error("[checkout-quote] NEAR Intents rejected preview", {
+        httpStatus: providerResponse.status,
+        correlationId: typeof root?.correlationId === "string" ? root.correlationId : undefined,
+        sourceAsset: source.assetId,
+        destinationAsset: destination.assetId,
+        providerError: safeProviderError,
+      });
+      const message = providerResponse.status === 401 || providerResponse.status === 403
+        ? "The quote service rejected its API credentials. Please try again later."
+        : providerResponse.status === 400
+          ? "NEAR Intents rejected the quote parameters. The source asset, destination asset, amount, or refund details may be unsupported."
+          : "NEAR Intents could not quote this asset pair right now. Please try again later.";
+      return NextResponse.json({ error: message }, { status: 422 });
     }
 
     return NextResponse.json({

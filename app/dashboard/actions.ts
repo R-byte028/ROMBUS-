@@ -70,7 +70,7 @@ export async function createPaymentRequest(formData: FormData) {
     redirect("/dashboard?error=amount");
   }
 
-  const businessName = String(authData.user.user_metadata?.business_name || authData.user.email || "ROMBUS merchant").slice(0, 120);
+  const businessName = String(authData.user.user_metadata?.business_name || authData.user.user_metadata?.wallet_address || "ROMBUS merchant").slice(0, 120);
   const { error: profileError } = await supabase.from("merchant_profiles").upsert({
     id: authData.user.id,
     display_name: businessName,
