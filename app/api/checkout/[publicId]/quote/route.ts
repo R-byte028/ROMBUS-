@@ -68,8 +68,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({
       amountInFormatted: quote.amountInFormatted,
       amountOutFormatted: quote.amountOutFormatted,
-      minAmountInFormatted: formatAtomic(quote.minAmountIn, source.decimals),
-      maxAmountInFormatted: formatAtomic(quote.maxAmountIn, source.decimals),
+      minAmountInFormatted: formatAtomic(quote.minAmountIn, source.decimals as number),
+      maxAmountInFormatted: formatAtomic(quote.maxAmountIn, source.decimals as number),
       deadline: typeof quote.deadline === "string" ? quote.deadline : null,
       timeEstimate: typeof quote.timeEstimate === "number" ? quote.timeEstimate : null,
       sourceSymbol: source.symbol || source.name || "source asset",
