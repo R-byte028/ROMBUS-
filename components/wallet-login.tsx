@@ -87,7 +87,7 @@ export default function WalletLogin({ purpose = "login", compact = false }: {
   }
 
   return (
-    <div className="wallet-login">
+    <div className={compact ? "wallet-login wallet-login-compact" : "wallet-login"}>
       <button className={compact ? "quiet-button" : "primary"} type="button" onClick={connectAndVerify} disabled={busy}>
         {busy ? "Waiting for wallet…" : purpose === "link" ? "Link wallet" : "Connect wallet"}
       </button>
