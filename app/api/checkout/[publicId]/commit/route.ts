@@ -106,6 +106,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       p_deposit_address: depositAddress,
       p_deposit_memo: quote.depositMemo === null || typeof quote.depositMemo === "string" ? quote.depositMemo : null,
       p_provider_deadline: deadlineDate.toISOString(),
+      p_provider_response: providerData as Record<string, unknown>,
     });
 
     if (storeError || stored !== true) {
