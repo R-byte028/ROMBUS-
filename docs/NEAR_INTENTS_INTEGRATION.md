@@ -41,6 +41,9 @@ API credentials must remain server-side. The client must never receive the partn
 
 ## Quote and amount integrity
 
+- For merchant-fixed invoices, use `swapType: EXACT_OUTPUT`. In this mode, `amount` is the requested destination token amount in destination-asset atomic units; the payer's source amount is quoted by 1Click. Do not calculate it using source-token decimals.
+- The checkout flow previews with `dry: true` and requests an executable quote with `dry: false` only after the payer explicitly confirms. The executable quote is persisted before deposit instructions are shown.
+
 - Use the live supported-token catalogue; do not manually invent asset IDs.
 - Use the exact asset IDs and decimal precision returned by the provider.
 - Use integer/string atomic token amounts for calculations.
