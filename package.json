@@ -15,7 +15,6 @@
     "next": "15.5.28",
     "react": "19.1.10",
     "react-dom": "19.1.10",
-    "siwe": "3.0.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {
