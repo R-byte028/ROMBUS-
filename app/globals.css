@@ -125,3 +125,5 @@ a { color: var(--orange); }
 .wallet-login-compact { display: inline-flex; }
 .wallet-login-compact .quiet-button { width: auto; min-height: 34px; white-space: nowrap; }
 .wallet-login .fine-print { margin: 0; }
+
+.refund-wallet-button { justify-self: start; width: auto; }
