@@ -75,5 +75,5 @@ $$;
 
 revoke all on function public.get_public_payment_request(uuid) from public;
 revoke all on function public.get_active_public_payment_attempt(uuid) from public;
-grant execute on function public.get_public_payment_request(uuid) to anon, authenticated;
-grant execute on function public.get_active_public_payment_attempt(uuid) to anon, authenticated;
+grant execute on function public.get_public_payment_request(uuid) to anon;
+grant execute on function public.get_active_public_payment_attempt(uuid) to anon;
