@@ -1,7 +1,6 @@
-import { getAddress, isAddress } from "ethers";
+import { getAddress, isAddress, verifyMessage } from "ethers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { SiweMessage } from "siwe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { walletDisplayName, walletIdentityEmail } from "@/lib/auth/wallet";
@@ -19,52 +18,36 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) return NextResponse.json({ error: "Invalid wallet verification request." }, { status: 400 });
 
     const address = getAddress(parsed.data.address);
-    const siwe = new SiweMessage(parsed.data.message);
-    if (getAddress(siwe.address) !== address || siwe.nonce !== parsed.data.nonce || siwe.version !== "1") {
-      return NextResponse.json({ error: "The signed message does not match this wallet request." }, { status: 401 });
-    }
-
     const admin = createAdminClient();
     const now = new Date();
     const { data: challenge, error: challengeError } = await admin
       .from("wallet_auth_challenges")
-      .select("id, wallet_address, chain_id, nonce, domain, uri, purpose, user_id, expires_at, consumed_at, created_at")
+      .select("id, wallet_address, chain_id, nonce, domain, uri, purpose, user_id, message, expires_at, consumed_at")
       .eq("nonce", parsed.data.nonce)
       .eq("wallet_address", address.toLowerCase())
       .is("consumed_at", null)
       .gt("expires_at", now.toISOString())
       .maybeSingle();
 
-    if (challengeError || !challenge) return NextResponse.json({ error: "This wallet request has expired or was already used. Try again." }, { status: 401 });
+    if (challengeError || !challenge) {
+      return NextResponse.json({ error: "This wallet request has expired or was already used. Try again." }, { status: 401 });
+    }
 
-    if (
-      siwe.domain !== challenge.domain ||
-      siwe.uri !== challenge.uri ||
-      siwe.chainId !== Number(challenge.chain_id) ||
-      siwe.statement !== (challenge.purpose === "link"
-        ? "Link this wallet to your ROMBUS merchant account. This signature does not move funds."
-        : "Sign in to ROMBUS. This signature does not move funds.")
-    ) {
+    // The client must return the exact SIWE message issued by this server.
+    // This binds the signature to the stored host, URI, address, chain, nonce and expiry.
+    if (parsed.data.message !== challenge.message || challenge.nonce !== parsed.data.nonce) {
       return NextResponse.json({ error: "The signed message does not match the expected ROMBUS request." }, { status: 401 });
     }
 
-    const issuedAt = siwe.issuedAt ? new Date(siwe.issuedAt).getTime() : 0;
-    const expiresAt = siwe.expirationTime ? new Date(siwe.expirationTime).getTime() : 0;
-    if (!issuedAt || issuedAt < new Date(challenge.created_at).getTime() - 30_000 ||
-        issuedAt > now.getTime() + 30_000 || !expiresAt ||
-        expiresAt > new Date(challenge.expires_at).getTime() + 1000 ||
-        expiresAt <= now.getTime()) {
-      return NextResponse.json({ error: "The signed message is outside its valid time window." }, { status: 401 });
+    let recoveredAddress: string;
+    try {
+      recoveredAddress = getAddress(verifyMessage(challenge.message, parsed.data.signature));
+    } catch {
+      return NextResponse.json({ error: "Wallet signature could not be verified." }, { status: 401 });
     }
-
-    const verification = await siwe.verify({
-      signature: parsed.data.signature,
-      domain: challenge.domain,
-      nonce: challenge.nonce,
-      time: now.toISOString(),
-    }, { suppressExceptions: true });
-
-    if (!verification.success) return NextResponse.json({ error: "Wallet signature could not be verified." }, { status: 401 });
+    if (recoveredAddress.toLowerCase() !== challenge.wallet_address) {
+      return NextResponse.json({ error: "Wallet signature does not match the requested address." }, { status: 401 });
+    }
 
     // Consume the nonce atomically. A second request with the same signature cannot create another session.
     const { data: consumed, error: consumeError } = await admin
@@ -76,7 +59,9 @@ export async function POST(request: NextRequest) {
       .select("id")
       .maybeSingle();
 
-    if (consumeError || !consumed) return NextResponse.json({ error: "This wallet request has already been used. Try again." }, { status: 401 });
+    if (consumeError || !consumed) {
+      return NextResponse.json({ error: "This wallet request has already been used. Try again." }, { status: 401 });
+    }
 
     const supabase = await createClient();
 
@@ -110,6 +95,8 @@ export async function POST(request: NextRequest) {
 
     let email: string;
     let userId: string;
+    let generatedLink: Awaited<ReturnType<typeof admin.auth.admin.generateLink>>["data"] | null = null;
+
     if (existingProfile?.id) {
       const { data: existingUser, error: existingUserError } = await admin.auth.admin.getUserById(existingProfile.id);
       if (existingUserError || !existingUser.user?.email) throw new Error("The linked merchant account could not be loaded.");
@@ -131,9 +118,10 @@ export async function POST(request: NextRequest) {
         userId = created.user.id;
       } else {
         // A previous interrupted attempt may already have created this wallet identity.
-        const { data: generatedUser, error: recoverError } = await admin.auth.admin.generateLink({ type: "magiclink", email });
-        if (recoverError || !generatedUser.user) throw new Error("Could not create or recover the wallet account.");
-        userId = generatedUser.user.id;
+        const recovered = await admin.auth.admin.generateLink({ type: "magiclink", email });
+        if (recovered.error || !recovered.data.user) throw new Error("Could not create or recover the wallet account.");
+        generatedLink = recovered.data;
+        userId = recovered.data.user.id;
       }
 
       const { error: profileError } = await admin.from("merchant_profiles").upsert({
@@ -147,14 +135,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate and immediately consume a one-time link internally. No email is sent or required.
-    const { data: generated, error: generateError } = await admin.auth.admin.generateLink({ type: "magiclink", email });
-    if (generateError || !generated.properties?.hashed_token) {
-      console.error("Wallet session link generation failed:", generateError?.message);
-      return NextResponse.json({ error: "Wallet verified, but a session could not be created. Please try again." }, { status: 500 });
+    if (!generatedLink) {
+      const generated = await admin.auth.admin.generateLink({ type: "magiclink", email });
+      if (generated.error) {
+        console.error("Wallet session link generation failed:", generated.error.message);
+        return NextResponse.json({ error: "Wallet verified, but a session could not be created. Please try again." }, { status: 500 });
+      }
+      generatedLink = generated.data;
     }
 
+    const tokenHash = generatedLink.properties?.hashed_token;
+    if (!tokenHash) return NextResponse.json({ error: "Wallet verified, but a session could not be created. Please try again." }, { status: 500 });
+
     const { data: sessionData, error: sessionError } = await supabase.auth.verifyOtp({
-      token_hash: generated.properties.hashed_token,
+      token_hash: tokenHash,
       type: "magiclink",
     });
     if (sessionError || !sessionData.session || sessionData.user?.id !== userId) {
