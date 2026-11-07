@@ -16,6 +16,7 @@ type QuotePreview = {
 
 type CommittedAttempt = {
   attemptId: string;
+  sourceAssetId: string;
   depositAddress: string;
   depositMemo: string | null;
   amountInFormatted: string;
@@ -24,20 +25,25 @@ type CommittedAttempt = {
   maxAmountInFormatted?: string;
   deadline: string;
   timeEstimate: number | null;
+  providerStatus?: string | null;
 };
 
 type StatusInfo = { status: string; providerStatus: string | null };
 
-export default function CheckoutForm({ publicId, tokens, destinationSymbol }: {
+export default function CheckoutForm({ publicId, tokens, destinationSymbol, initialAttempt }: {
   publicId: string;
   tokens: ProviderToken[];
   destinationSymbol: string;
+  initialAttempt?: CommittedAttempt | null;
 }) {
-  const [sourceAssetId, setSourceAssetId] = useState(tokens[0]?.assetId || "");
+  const [sourceAssetId, setSourceAssetId] = useState(initialAttempt?.sourceAssetId || tokens[0]?.assetId || "");
   const [refundAddress, setRefundAddress] = useState("");
   const [preview, setPreview] = useState<QuotePreview | null>(null);
-  const [attempt, setAttempt] = useState<CommittedAttempt | null>(null);
-  const [status, setStatus] = useState<StatusInfo | null>(null);
+  const [attempt, setAttempt] = useState<CommittedAttempt | null>(initialAttempt || null);
+  const [status, setStatus] = useState<StatusInfo | null>(initialAttempt ? {
+    status: initialAttempt.providerStatus === "PROCESSING" ? "processing" : initialAttempt.providerStatus === "KNOWN_DEPOSIT_TX" ? "known_deposit_tx" : "pending_deposit",
+    providerStatus: initialAttempt.providerStatus || "PENDING_DEPOSIT",
+  } : null);
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -101,21 +107,22 @@ export default function CheckoutForm({ publicId, tokens, destinationSymbol }: {
 
   return (
     <div className="stack checkout-form">
-      <label>Pay with
-        <select className="field" value={sourceAssetId} onChange={(event) => { setSourceAssetId(event.target.value); setPreview(null); }} disabled={!!attempt}>
-          {tokens.map((token) => <option key={token.assetId} value={token.assetId}>
-            {token.symbol || token.name || token.assetId}{token.blockchain ? " · " + token.blockchain : ""}
-          </option>)}
-        </select>
-      </label>
-      <label>Refund wallet address
-        <input className="field" value={refundAddress} onChange={(event) => { setRefundAddress(event.target.value); setPreview(null); }} placeholder="Your wallet address on the payment network" minLength={2} maxLength={200} required disabled={!!attempt} />
-      </label>
-      <p className="muted fine-print">Use an address on the network of the asset you are paying with. Refunds, if needed, are sent there.</p>
-
-      {!attempt ? <button className="primary" type="button" onClick={requestPreview} disabled={busy || !sourceAssetId || refundAddress.trim().length < 2}>
-        {busy ? "Getting quote…" : "Get payment quote"}
-      </button> : null}
+      {!attempt ? <>
+        <label>Pay with
+          <select className="field" value={sourceAssetId} onChange={(event) => { setSourceAssetId(event.target.value); setPreview(null); }} disabled={busy}>
+            {tokens.map((token) => <option key={token.assetId} value={token.assetId}>
+              {token.symbol || token.name || token.assetId}{token.blockchain ? " · " + token.blockchain : ""}
+            </option>)}
+          </select>
+        </label>
+        <label>Refund wallet address
+          <input className="field" value={refundAddress} onChange={(event) => { setRefundAddress(event.target.value); setPreview(null); }} placeholder="Your wallet address on the payment network" minLength={2} maxLength={200} required />
+        </label>
+        <p className="muted fine-print">Use an address on the network of the asset you are paying with. Refunds, if needed, are sent there.</p>
+        {!preview ? <button className="primary" type="button" onClick={requestPreview} disabled={busy || !sourceAssetId || refundAddress.trim().length < 2}>
+          {busy ? "Getting quote…" : "Get payment quote"}
+        </button> : null}
+      </> : null}
 
       {preview ? (
         <div className="checkout-quote">
@@ -147,7 +154,7 @@ export default function CheckoutForm({ publicId, tokens, destinationSymbol }: {
           <div className="payment-status">
             <span className="muted">Payment status</span>
             <strong>{status?.status?.replaceAll("_", " ") || "Waiting for deposit"}</strong>
-            <span className="muted fine-print">Status is checked with NEAR Intents. Keep this page open or return to refresh.</span>
+            <span className="muted fine-print">Status is checked with NEAR Intents. You can safely return to this link to resume these instructions.</span>
           </div>
           {status?.status === "completed" ? <p className="notice">Payment confirmed. The merchant has received the requested asset.</p> : null}
           {status && ["failed", "refunded", "incomplete_deposit", "expired"].includes(status.status) ? <p className="error">This payment attempt ended with status: {status.status.replaceAll("_", " ")}. Do not send additional funds to this address.</p> : null}
