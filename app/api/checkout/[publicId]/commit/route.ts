@@ -86,7 +86,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const deadline = quote && typeof quote.deadline === "string" ? quote.deadline : quote && typeof quote.timeWhenInactive === "string" ? quote.timeWhenInactive : null;
     const deadlineDate = deadline ? new Date(deadline) : null;
 
-    if (!providerResponse.ok || !correlationId || !depositAddress || !amountIn || !/^\d+$/.test(amountIn) || !amountOut || !/^\d+$/.test(amountOut) || !deadlineDate || Number.isNaN(deadlineDate.getTime())) {
+    if (!providerResponse.ok || !quote || !correlationId || !depositAddress || !amountIn || !/^\d+$/.test(amountIn) || !amountOut || !/^\d+$/.test(amountOut) || !deadlineDate || Number.isNaN(deadlineDate.getTime())) {
       await admin.rpc("fail_public_payment_attempt", { p_attempt_id: attemptId, p_reason: "provider_quote_invalid_or_rejected" });
       return NextResponse.json({ error: "NEAR Intents could not prepare a valid deposit quote. No funds have been moved." }, { status: 502 });
     }
