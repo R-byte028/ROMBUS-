@@ -30,7 +30,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!parsed.success) return NextResponse.json({ error: "Review the quote and explicitly confirm before continuing." }, { status: 400 });
 
   const payment = await getCheckoutRequest(publicId);
-  if (!payment) return NextResponse.json({ error: "This payment request is unavailable, paid, or expired." }, { status: 404 });
+  if (!payment) return NextResponse.json({ error: "This payment request does not exist." }, { status: 404 });
+  if (payment.status !== "open" || (payment.expires_at !== null && Date.parse(payment.expires_at) <= Date.now())) {
+    return NextResponse.json({ error: "This payment request is no longer payable." }, { status: 409 });
+  }
 
   let admin;
   try { admin = createAdminClient(); }
@@ -108,6 +111,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     return NextResponse.json({
       attemptId,
+      sourceAssetId: source.assetId,
       depositAddress,
       depositMemo: typeof quote.depositMemo === "string" ? quote.depositMemo : null,
       amountInFormatted: typeof quote.amountInFormatted === "string" ? quote.amountInFormatted : formatAtomic(amountIn, source.decimals as number),
