@@ -54,7 +54,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       </section>
 
       {params.error && errors[params.error] ? <p className="error notice-panel" role="alert">{errors[params.error]}</p> : null}
-      {params.created ? <div className="notice-panel"><strong>Payment request saved.</strong><p className="muted">Reserved checkout URL — not active yet:</p><code>{`${process.env.NEXT_PUBLIC_APP_URL || "https://your-rombus-domain"}/checkout/${params.created}`}</code><p className="muted fine-print">The request is stored securely. Public checkout and sharing will be enabled in the next stage.</p></div> : null}
+      {params.created ? <div className="notice-panel"><strong>Payment request saved.</strong><p className="muted">Share this payment link:</p><code>{`${process.env.NEXT_PUBLIC_APP_URL || "https://your-rombus-domain"}/checkout/${params.created}`}</code><p className="muted fine-print">Customers can preview a quote, confirm, and receive deposit instructions. A request is marked paid only after NEAR Intents confirms settlement.</p></div> : null}
 
       <div className="dashboard-grid">
         <section className="panel dashboard-card">
