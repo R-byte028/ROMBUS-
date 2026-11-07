@@ -69,3 +69,8 @@ export function getNearIntentsHeaders() {
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
+
+export function getQuoteDeadline(source: ProviderToken): string {
+  const minutes = source.blockchain?.toLowerCase() === "btc" ? 120 : 60;
+  return new Date(Date.now() + minutes * 60_000).toISOString();
+}
