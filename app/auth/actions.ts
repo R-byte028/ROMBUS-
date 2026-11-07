@@ -14,11 +14,11 @@ export async function signIn(formData: FormData) {
     email: formData.get("email"),
     password: formData.get("password"),
   });
-  if (!parsed.success) redirect("/login?error=invalid");
+  if (!parsed.success) redirect("/legacy-login?error=invalid");
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
-  if (error) redirect("/login?error=credentials");
+  if (error) redirect("/legacy-login?error=credentials");
   redirect("/dashboard");
 }
 
