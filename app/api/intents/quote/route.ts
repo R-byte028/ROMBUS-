@@ -7,7 +7,9 @@ const quoteSchema = z.object({
   swapType: z.enum(["EXACT_INPUT", "EXACT_OUTPUT"]),
   originAsset: z.string().min(1).max(300),
   destinationAsset: z.string().min(1).max(300),
-  amount: z.string().regex(/^\\d+$/).max(100),
+  // NEAR Intents expects the amount in the origin token's atomic units.
+  // Keep this as a digit-only string to avoid JavaScript number precision loss.
+  amount: z.string().regex(/^\d+$/).max(100),
   recipient: z.string().min(2).max(200),
   refundTo: z.string().min(2).max(200),
   slippageTolerance: z.number().int().min(0).max(5000).optional(),
@@ -37,7 +39,7 @@ export async function POST(request: NextRequest) {
       headers: {
         "content-type": "application/json",
         accept: "application/json",
-        authorization: `Bearer ${jwt}`,
+        authorization: \`Bearer \${jwt}\`,
       },
       body: JSON.stringify({ ...parsed.data, dry: true }),
       cache: "no-store",
