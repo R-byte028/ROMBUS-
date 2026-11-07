@@ -31,7 +31,15 @@ export async function POST(request: NextRequest) {
     const response = await fetch("https://1click.chaindefuser.com/v0/quote", {
       method: "POST",
       headers: { "content-type": "application/json", accept: "application/json", authorization: "Bearer " + jwt },
-      body: JSON.stringify({ ...parsed.data, dry: true }),
+      body: JSON.stringify({
+        ...parsed.data,
+        slippageTolerance: parsed.data.slippageTolerance ?? 100,
+        depositType: "ORIGIN_CHAIN",
+        refundType: "ORIGIN_CHAIN",
+        recipientType: "DESTINATION_CHAIN",
+        deadline: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+        dry: true,
+      }),
       cache: "no-store",
     });
     const data: unknown = await response.json().catch(() => null);
