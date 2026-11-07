@@ -206,9 +206,9 @@ revoke all on function public.fail_public_payment_attempt(uuid, text) from publi
 revoke all on function public.get_public_payment_attempt(uuid) from public;
 revoke all on function public.apply_public_payment_status(uuid, text) from public;
 
-grant execute on function public.get_public_payment_request(uuid) to anon, authenticated;
-grant execute on function public.create_public_payment_attempt(uuid, text, text, text) to anon, authenticated;
-grant execute on function public.store_public_payment_quote(uuid, text, text, text, text, text, timestamptz) to anon, authenticated;
-grant execute on function public.fail_public_payment_attempt(uuid, text) to anon, authenticated;
-grant execute on function public.get_public_payment_attempt(uuid) to anon, authenticated;
-grant execute on function public.apply_public_payment_status(uuid, text) to anon, authenticated;
+grant execute on function public.get_public_payment_request(uuid) to anon;
+grant execute on function public.create_public_payment_attempt(uuid, text, text, text) to service_role;
+grant execute on function public.store_public_payment_quote(uuid, text, text, text, text, text, timestamptz) to service_role;
+grant execute on function public.fail_public_payment_attempt(uuid, text) to service_role;
+grant execute on function public.get_public_payment_attempt(uuid) to service_role;
+grant execute on function public.apply_public_payment_status(uuid, text) to service_role;
