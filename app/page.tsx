@@ -100,8 +100,8 @@ export default function Home() {
           ROMBUS<span style={{ color: "var(--orange)" }}>.</span>
         </a>
         <nav style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 13 }}>
-          <a href="/login" className="muted" style={{ textDecoration: "none" }}>Sign in</a>
-          <a href="/signup" className="nav-cta">Create account</a>
+          <a href="/login" className="muted" style={{ textDecoration: "none" }}>Merchant access</a>
+          <a href="/login" className="nav-cta">Connect wallet</a>
         </nav>
       </header>
 

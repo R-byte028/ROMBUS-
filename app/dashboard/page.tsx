@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { signOut } from "@/app/auth/actions";
 import { createClient } from "@/lib/supabase/server";
 import PaymentRequestForm from "./payment-request-form";
+import WalletLogin from "@/components/wallet-login";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   if (authError || !authData.user) redirect("/login");
 
   const [{ data: profile }, { data: requests }, tokens] = await Promise.all([
-    supabase.from("merchant_profiles").select("business_name, display_name").eq("id", authData.user.id).maybeSingle(),
+    supabase.from("merchant_profiles").select("business_name, display_name, wallet_address").eq("id", authData.user.id).maybeSingle(),
     supabase.from("payment_requests").select("id, public_id, title, amount_atomic, destination_symbol, destination_chain, status, expires_at, created_at").eq("merchant_id", authData.user.id).order("created_at", { ascending: false }).limit(20),
     getTokens(),
   ]);
@@ -44,7 +45,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     <main className="shell dashboard-shell">
       <header className="dashboard-header">
         <Link className="brand" href="/">ROMBUS<span>.</span></Link>
-        <div className="account-area"><span className="muted">{authData.user.email}</span><form action={signOut}><button className="quiet-button" type="submit">Sign out</button></form></div>
+        <div className="account-area"><span className="muted">{profile?.wallet_address ? `Wallet ${profile.wallet_address.slice(0, 6)}…${profile.wallet_address.slice(-4)}` : authData.user.email}</span>{!profile?.wallet_address ? <WalletLogin purpose="link" compact /> : null}<form action={signOut}><button className="quiet-button" type="submit">Sign out</button></form></div>
       </header>
 
       <section className="dashboard-intro">
@@ -54,7 +55,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       </section>
 
       {params.error && errors[params.error] ? <p className="error notice-panel" role="alert">{errors[params.error]}</p> : null}
-      {params.created ? <div className="notice-panel"><strong>Payment request saved.</strong><p className="muted">Reserved checkout URL — not active yet:</p><code>{`${process.env.NEXT_PUBLIC_APP_URL || "https://your-rombus-domain"}/checkout/${params.created}`}</code><p className="muted fine-print">The request is stored securely. Public checkout and sharing will be enabled in the next stage.</p></div> : null}
+      {params.created ? <div className="notice-panel"><strong>Payment request saved.</strong><p className="muted">Share this payment link:</p><code>{`${process.env.NEXT_PUBLIC_APP_URL || "https://your-rombus-domain"}/checkout/${params.created}`}</code><p className="muted fine-print">Customers can preview a quote, confirm, and receive deposit instructions. A request is marked paid only after NEAR Intents confirms settlement.</p></div> : null}
 
       <div className="dashboard-grid">
         <section className="panel dashboard-card">

@@ -87,3 +87,43 @@ a { color: var(--orange); }
   .account-area { align-items: flex-end; flex-direction: column; gap: 8px; }
   .dashboard-header { align-items: flex-start; }
 }
+
+
+.checkout-shell { padding-top: 28px; padding-bottom: 56px; }
+.checkout-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 18px; }
+.checkout-secure { font-size: 10px; letter-spacing: 1.2px; }
+.checkout-layout { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 18px; align-items: start; max-width: 1020px; margin: 44px auto 0; }
+.checkout-summary, .checkout-payment { min-width: 0; padding: clamp(20px, 4vw, 30px); }
+.checkout-summary h1 { font-size: clamp(27px, 4vw, 38px); line-height: 1.12; letter-spacing: -1.3px; margin: 8px 0 12px; overflow-wrap: anywhere; }
+.checkout-description { line-height: 1.6; font-size: 13px; }
+.checkout-amount-label { font-size: 12px; margin-top: 30px; }
+.checkout-amount { font-size: clamp(32px, 5vw, 48px); font-weight: 800; letter-spacing: -2px; margin-top: 5px; overflow-wrap: anywhere; }
+.checkout-amount span { font-size: 15px; letter-spacing: 0; color: var(--muted); margin-left: 8px; }
+.checkout-meta { display: grid; gap: 12px; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line); }
+.checkout-meta div { display: flex; justify-content: space-between; gap: 14px; font-size: 12px; }
+.checkout-meta strong { text-align: right; overflow-wrap: anywhere; }
+.checkout-note { margin-top: 24px; }
+.checkout-payment .section-heading { margin-bottom: 18px; }
+.checkout-form { gap: 14px; }
+.checkout-form label { display: grid; gap: 8px; color: #cbd2dc; font-size: 13px; min-width: 0; }
+.checkout-form .field { min-width: 0; }
+.checkout-quote { display: grid; gap: 13px; margin-top: 8px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #0c1016; }
+.checkout-quote .eyebrow { margin: 0; }
+.quote-line { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; align-items: baseline; }
+.quote-line strong { text-align: right; overflow-wrap: anywhere; }
+.confirm-check { display: flex !important; align-items: flex-start; gap: 10px !important; line-height: 1.5; font-size: 12px !important; }
+.confirm-check input { margin-top: 3px; accent-color: var(--orange); flex: 0 0 auto; }
+.deposit-address { resize: vertical; overflow-wrap: anywhere; }
+.copy-button { justify-self: start; }
+.payment-status { display: grid; gap: 6px; border-top: 1px solid var(--line); padding-top: 14px; font-size: 13px; text-transform: capitalize; }
+.checkout-footer { max-width: 1020px; margin: 24px auto 0; }
+@media (max-width: 820px) { .checkout-layout { grid-template-columns: 1fr; margin-top: 28px; } }
+@media (max-width: 560px) { .checkout-meta div { align-items: flex-start; } .quote-line { align-items: flex-start; } }
+
+.wallet-login { display: grid; gap: 10px; }
+.wallet-login .primary, .wallet-login .quiet-button { width: 100%; min-height: 44px; }
+.wallet-login-compact { display: inline-flex; }
+.wallet-login-compact .quiet-button { width: auto; min-height: 34px; white-space: nowrap; }
+.wallet-login .fine-print { margin: 0; }
+
+.refund-wallet-button { justify-self: start; width: auto; }
