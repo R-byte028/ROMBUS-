@@ -10,8 +10,7 @@ type RateLimitOptions = {
 
 /**
  * Enforces a shared, database-backed fixed-window limit.
- * Vercel supplies x-real-ip; x-forwarded-for is a fallback for trusted proxies.
- * Only a SHA-256 digest of scope + IP is persisted.
+ * Uses Vercel's edge-provided x-real-ip and a keyed HMAC digest; raw IPs are not persisted.
  */
 export async function enforceApiRateLimit(
   request: Request | NextRequest,
