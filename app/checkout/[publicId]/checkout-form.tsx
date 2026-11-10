@@ -29,6 +29,11 @@ type CommittedAttempt = {
 };
 
 type StatusInfo = { status: string; providerStatus: string | null };
+type InjectedWallet = { request(args: { method: string; params?: unknown[] }): Promise<unknown> };
+
+function isEvmNetwork(value?: string) {
+  return /ethereum|\beth\b|base|arbitrum|optimism|polygon|\bbnb\b|binance smart chain|avalanche|\bavax\b|linea|scroll|zksync|mantle|gnosis|blast|celo/i.test(value || "");
+}
 
 export default function CheckoutForm({ publicId, tokens, destinationSymbol, initialAttempt }: {
   publicId: string;
@@ -48,6 +53,20 @@ export default function CheckoutForm({ publicId, tokens, destinationSymbol, init
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const sourceToken = useMemo(() => tokens.find((token) => token.assetId === sourceAssetId), [tokens, sourceAssetId]);
+
+  async function connectRefundWallet() {
+    setError("");
+    try {
+      const provider = (window as Window & { ethereum?: InjectedWallet }).ethereum;
+      if (!provider) throw new Error("No EVM wallet was detected. Open this checkout inside your wallet app browser or enter your refund address manually.");
+      const accounts = await provider.request({ method: "eth_requestAccounts" });
+      if (!Array.isArray(accounts) || typeof accounts[0] !== "string") throw new Error("Your wallet did not return an account.");
+      setRefundAddress(accounts[0]);
+      setPreview(null);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not connect your wallet.");
+    }
+  }
 
   async function requestPreview() {
     setBusy(true); setError(""); setPreview(null); setAttempt(null); setStatus(null); setConfirmed(false);
@@ -118,7 +137,8 @@ export default function CheckoutForm({ publicId, tokens, destinationSymbol, init
         <label>Refund wallet address
           <input className="field" value={refundAddress} onChange={(event) => { setRefundAddress(event.target.value); setPreview(null); }} placeholder="Your wallet address on the payment network" minLength={2} maxLength={200} required />
         </label>
-        <p className="muted fine-print">Use an address on the network of the asset you are paying with. Refunds, if needed, are sent there.</p>
+        {isEvmNetwork(sourceToken?.blockchain) ? <button className="quiet-button refund-wallet-button" type="button" onClick={connectRefundWallet} disabled={busy}>Connect EVM wallet to fill address</button> : null}
+        <p className="muted fine-print">Use an address on the network of the asset you are paying with. For supported EVM networks, connect your wallet to fill this automatically. You still review the quote and send funds yourself.</p>
         {!preview ? <button className="primary" type="button" onClick={requestPreview} disabled={busy || !sourceAssetId || refundAddress.trim().length < 2}>
           {busy ? "Getting quote…" : "Get payment quote"}
         </button> : null}

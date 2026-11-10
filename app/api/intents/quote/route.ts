@@ -1,3 +1,4 @@
+import { enforceApiRateLimit } from "@/lib/security/rate-limit";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -18,6 +19,9 @@ const quoteSchema = z.object({
 
 export async function POST(request: NextRequest) {
   const jwt = process.env.NEAR_INTENTS_JWT;
+  const rateLimitResponse = await enforceApiRateLimit(request, { scope: "intents-quote", limit: 20, windowSeconds: 600 });
+  if (rateLimitResponse) return rateLimitResponse;
+
   if (!jwt) return NextResponse.json({ error: "NEAR Intents credentials are not configured on the server yet." }, { status: 503 });
 
   let input: unknown;

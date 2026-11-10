@@ -38,7 +38,25 @@ export type ProviderToken = {
 export async function getCheckoutRequest(publicId: string): Promise<CheckoutRequest | null> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("get_public_payment_request", { p_public_id: publicId });
-  if (error || !Array.isArray(data) || !data.length) return null;
+
+  if (error) {
+    console.error("[checkout] get_public_payment_request RPC failed", {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+    });
+    return null;
+  }
+
+  if (!Array.isArray(data) || !data.length) {
+    console.warn("[checkout] get_public_payment_request returned no rows", {
+      publicId,
+      isArray: Array.isArray(data),
+    });
+    return null;
+  }
+
   return data[0] as CheckoutRequest;
 }
 
