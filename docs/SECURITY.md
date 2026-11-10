@@ -20,7 +20,7 @@
 - Supabase Auth sessions are issued server-side after wallet verification. Internal non-routable email identities are not contact addresses.
 - Legacy email accounts remain available for migration and can link a wallet after signing in.
 - Current verifier supports EOA EVM signatures only. Smart-contract wallet verification, WalletConnect and non-EVM wallet auth remain limitations.
-- Add rate limits and abuse monitoring to nonce/verify endpoints before public production.
+- Shared database-backed rate limits are implemented on wallet nonce/verify and public quote/commit/status routes. Apply the rate-limit migration and verify enforcement on the Vercel preview before production. Abuse monitoring remains outstanding.
 
 ## Payment integrity
 - Two narrowly scoped public-link lookup RPCs intentionally use `SECURITY DEFINER` and are executable by `anon` only. They return a small, fixed set of fields for an unguessable UUID and do not grant table-level reads. Supabase's advisor flags public `SECURITY DEFINER` execution; this is an intentional trade-off for public checkout and should be re-reviewed if the public-link design changes. All mutation RPCs and the individual-attempt lookup remain server-only.
