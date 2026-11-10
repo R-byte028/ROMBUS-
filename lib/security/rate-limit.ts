@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHmac } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -17,9 +17,8 @@ export async function enforceApiRateLimit(
   request: Request | NextRequest,
   options: RateLimitOptions,
 ): Promise<NextResponse | null> {
-  const realIp = request.headers.get("x-real-ip")?.trim();
-  const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  const ip = realIp || forwardedFor;
+  // Vercel sets x-real-ip at the edge. Do not trust client-controlled forwarding headers.
+  const ip = request.headers.get("x-real-ip")?.trim();
 
   if (!ip) {
     return NextResponse.json(
@@ -28,7 +27,15 @@ export async function enforceApiRateLimit(
     );
   }
 
-  const keyHash = createHash("sha256")
+  const hashSecret = process.env.SUPABASE_SECRET_KEY;
+  if (!hashSecret) {
+    return NextResponse.json(
+      { error: "Request protection is temporarily unavailable. Please try again." },
+      { status: 503, headers: { "Cache-Control": "no-store" } },
+    );
+  }
+
+  const keyHash = createHmac("sha256", hashSecret)
     .update("rombus-api-rate-limit:v1:")
     .update(options.scope)
     .update(":")
