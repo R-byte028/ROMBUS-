@@ -6,8 +6,24 @@ create table if not exists public.api_rate_limits (
   updated_at timestamptz not null default now()
 );
 
+create index if not exists api_rate_limits_updated_at_idx
+  on public.api_rate_limits (updated_at);
+
 alter table public.api_rate_limits enable row level security;
 revoke all on table public.api_rate_limits from public, anon, authenticated;
+
+-- A singleton maintenance marker throttles cleanup to at most once per hour.
+create table if not exists public.api_rate_limit_maintenance (
+  singleton boolean primary key default true check (singleton),
+  last_cleanup_at timestamptz not null default '-infinity'::timestamptz
+);
+
+insert into public.api_rate_limit_maintenance (singleton)
+values (true)
+on conflict (singleton) do nothing;
+
+alter table public.api_rate_limit_maintenance enable row level security;
+revoke all on table public.api_rate_limit_maintenance from public, anon, authenticated;
 
 create or replace function public.consume_api_rate_limit(
   p_key_hash text,
@@ -24,10 +40,11 @@ declare
   v_started timestamptz;
   v_count integer;
   v_retry integer;
+  v_cleanup_due boolean := false;
 begin
   if p_key_hash is null or p_key_hash !~ '^[a-f0-9]{64}$'
-    or p_limit < 1 or p_limit > 10000
-    or p_window_seconds < 1 or p_window_seconds > 86400 then
+    or p_limit is null or p_limit < 1 or p_limit > 10000
+    or p_window_seconds is null or p_window_seconds < 1 or p_window_seconds > 86400 then
     raise exception 'invalid_rate_limit_arguments';
   end if;
 
@@ -47,6 +64,30 @@ begin
         updated_at = v_now
   returning public.api_rate_limits.window_started_at, public.api_rate_limits.request_count
     into v_started, v_count;
+
+  -- Retain records for 48 hours (twice the maximum supported rate-limit window).
+  -- Cleanup is opportunistic, bounded to 1,000 rows, and claimed at most hourly.
+  with claimed as (
+    update public.api_rate_limit_maintenance
+    set last_cleanup_at = v_now
+    where singleton = true
+      and last_cleanup_at <= v_now - interval '1 hour'
+    returning singleton
+  )
+  select exists (select 1 from claimed) into v_cleanup_due;
+
+  if v_cleanup_due then
+    with stale as (
+      select key_hash
+      from public.api_rate_limits
+      where updated_at < v_now - interval '48 hours'
+      order by updated_at
+      limit 1000
+    )
+    delete from public.api_rate_limits limits
+    using stale
+    where limits.key_hash = stale.key_hash;
+  end if;
 
   v_retry := greatest(1, ceil(extract(epoch from (v_started + make_interval(secs => p_window_seconds) - v_now)))::integer);
   return query select v_count <= p_limit, greatest(0, p_limit - v_count), v_retry;
