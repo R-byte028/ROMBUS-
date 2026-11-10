@@ -11,7 +11,7 @@ const allowed = new Set(["PENDING_DEPOSIT", "KNOWN_DEPOSIT_TX", "PROCESSING", "S
 
 export async function GET(_request: Request, { params }: { params: Promise<{ attemptId: string }> }) {
   const { attemptId } = await params;
-  const rateLimitResponse = await enforceApiRateLimit(request, { scope: "checkout-status", limit: 30, windowSeconds: 60 });
+  const rateLimitResponse = await enforceApiRateLimit(_request, { scope: "checkout-status", limit: 30, windowSeconds: 60 });
   if (rateLimitResponse) return rateLimitResponse;
 
   if (!z.string().uuid().safeParse(attemptId).success) return NextResponse.json({ error: "Invalid payment attempt." }, { status: 400 });
