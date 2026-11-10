@@ -1,3 +1,4 @@
+import { enforceApiRateLimit } from "@/lib/security/rate-limit";
 import { getAddress, isAddress, verifyMessage } from "ethers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -13,6 +14,8 @@ const schema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = await enforceApiRateLimit(request, { scope: "wallet-verify", limit: 10, windowSeconds: 600 });
+  if (rateLimitResponse) return rateLimitResponse;
   try {
     const parsed = schema.safeParse(await request.json());
     if (!parsed.success) return NextResponse.json({ error: "Invalid wallet verification request." }, { status: 400 });
