@@ -1,3 +1,4 @@
+import { enforceApiRateLimit } from "@/lib/security/rate-limit";
 import { randomBytes } from "node:crypto";
 import { getAddress, isAddress } from "ethers";
 import { NextRequest, NextResponse } from "next/server";
@@ -13,6 +14,8 @@ const schema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const rateLimitResponse = await enforceApiRateLimit(request, { scope: "wallet-nonce", limit: 5, windowSeconds: 600 });
+  if (rateLimitResponse) return rateLimitResponse;
   try {
     const parsed = schema.safeParse(await request.json());
     if (!parsed.success) return NextResponse.json({ error: "Invalid wallet details." }, { status: 400 });
