@@ -1,3 +1,4 @@
+import { enforceApiRateLimit } from "@/lib/security/rate-limit";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCheckoutRequest, getNearIntentsHeaders, getProviderTokens, getQuoteDeadline } from "@/lib/checkout";
@@ -20,6 +21,9 @@ function formatAtomic(value: unknown, decimals: number): string | undefined {
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ publicId: string }> }) {
   const { publicId } = await params;
+  const rateLimitResponse = await enforceApiRateLimit(request, { scope: "checkout-quote", limit: 20, windowSeconds: 600 });
+  if (rateLimitResponse) return rateLimitResponse;
+
   if (!z.string().uuid().safeParse(publicId).success) return NextResponse.json({ error: "Invalid payment link." }, { status: 400 });
 
   let body: unknown;
