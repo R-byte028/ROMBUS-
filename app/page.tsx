@@ -97,7 +97,7 @@ export default function Home() {
     <main className="shell" style={{ paddingTop: 28, paddingBottom: 64 }}>
       <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 74 }}>
         <a href="/" style={{ color: "inherit", textDecoration: "none", fontSize: 22, fontWeight: 800, letterSpacing: "-1px" }}>
-          ROMBUS<span style={{ color: "var(--orange)" }}>.</span>
+          RIVA<span style={{ color: "var(--orange)" }}>.</span>
         </a>
         <nav style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 13 }}>
           <a href="/login" className="muted" style={{ textDecoration: "none" }}>Merchant access</a>
@@ -114,7 +114,7 @@ export default function Home() {
           Move value.<br /><span style={{ color: "var(--orange)" }}>Without boundaries.</span>
         </h1>
         <p className="muted" style={{ fontSize: 16, lineHeight: 1.7, maxWidth: 570, margin: "0 auto" }}>
-          Pay with one supported asset. Let the recipient receive another. ROMBUS is building a simpler way to move value across Web3.
+          Pay with one supported asset. Let the recipient receive another. RIVA is building a simpler way to move value across Web3.
         </p>
       </section>
 
@@ -175,7 +175,7 @@ export default function Home() {
       </section>
 
       <footer className="muted" style={{ maxWidth: 760, margin: "22px auto 0", display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", fontSize: 12 }}>
-        <span>ROMBUS · Move value. Without boundaries.</span>
+        <span>RIVA · Move value. Without boundaries.</span>
         <span>Non-custodial by design · Powered by NEAR Intents</span>
       </footer>
     </main>
