@@ -42,6 +42,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ att
     }
 
     const providerStatus = (data as { status: string }).status;
+    const quoteResponse = (data as { quoteResponse?: unknown }).quoteResponse;
+    if (!quoteResponse || typeof quoteResponse !== "object" ||
+      typeof (quoteResponse as { correlationId?: unknown }).correlationId !== "string") {
+      return NextResponse.json({ status: attempt.status, providerStatus: attempt.provider_status, refreshing: true }, { headers: { "Cache-Control": "no-store" } });
+    }
     if (!allowed.has(providerStatus)) {
       return NextResponse.json({ status: attempt.status, providerStatus: attempt.provider_status, refreshing: true }, { headers: { "Cache-Control": "no-store" } });
     }

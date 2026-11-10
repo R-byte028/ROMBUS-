@@ -1,5 +1,6 @@
--- Bind every provider status update to the exact 1Click quote created for this attempt.
--- The 1Click status response includes correlationId; status alone is not sufficient evidence.
+-- Bind provider status updates to the original 1Click quote embedded in the status response.
+-- The status envelope has its own correlationId; quoteResponse.correlationId identifies the
+-- original quote and is the value persisted as payment_attempts.provider_quote_id.
 create or replace function public.apply_public_payment_status(
   p_attempt_id uuid,
   p_provider_status text,
@@ -37,7 +38,8 @@ begin
   if p_provider_response is null
     or jsonb_typeof(p_provider_response) <> 'object'
     or p_provider_response->>'status' is distinct from p_provider_status
-    or coalesce(p_provider_response->>'correlationId', '') = ''
+    or jsonb_typeof(p_provider_response->'quoteResponse') <> 'object'
+    or coalesce(p_provider_response #>> '{quoteResponse,correlationId}', '') = ''
     or pg_column_size(p_provider_response) > 32768 then
     raise exception 'invalid_provider_status_response';
   end if;
@@ -53,7 +55,7 @@ begin
   end if;
 
   if v_provider_quote_id is null
-    or p_provider_response->>'correlationId' is distinct from v_provider_quote_id then
+    or (p_provider_response #>> '{quoteResponse,correlationId}') is distinct from v_provider_quote_id then
     raise exception 'provider_correlation_id_mismatch';
   end if;
 
@@ -100,7 +102,7 @@ begin
   )
   values (
     v_request_id, p_attempt_id, 'provider_status_updated', p_provider_status,
-    jsonb_build_object('correlationId', p_provider_response->>'correlationId')
+    jsonb_build_object('quoteCorrelationId', p_provider_response #>> '{quoteResponse,correlationId}')
   );
 
   if p_provider_status = 'SUCCESS' then
