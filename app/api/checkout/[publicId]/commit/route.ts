@@ -1,3 +1,4 @@
+import { enforceApiRateLimit } from "@/lib/security/rate-limit";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -22,6 +23,9 @@ function formatAtomic(value: unknown, decimals: number): string | undefined {
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ publicId: string }> }) {
   const { publicId } = await params;
+  const rateLimitResponse = await enforceApiRateLimit(request, { scope: "checkout-commit", limit: 5, windowSeconds: 600 });
+  if (rateLimitResponse) return rateLimitResponse;
+
   if (!z.string().uuid().safeParse(publicId).success) return NextResponse.json({ error: "Invalid payment link." }, { status: 400 });
 
   let body: unknown;
