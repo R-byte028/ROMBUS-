@@ -5,7 +5,7 @@ export default async function LegacyLoginPage({ searchParams }: { searchParams: 
   const params = await searchParams;
   return (
     <main className="shell auth-shell">
-      <Link className="brand" href="/">ROMBUS<span>.</span></Link>
+      <Link className="brand" href="/">RIVA<span>.</span></Link>
       <section className="panel auth-panel">
         <p className="eyebrow">EXISTING MERCHANT ACCOUNT</p>
         <h1>Legacy sign-in.</h1>
