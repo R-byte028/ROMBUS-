@@ -19,10 +19,12 @@ function networkLabel(blockchain?: string) {
   return blockchain || "Network not specified";
 }
 
-function tokenLabel(token: Token) {
+function tokenLabel(token: Token, allTokens: Token[]) {
   const asset = token.symbol || token.name || "Unknown asset";
   const name = token.name && token.name !== token.symbol ? ` · ${token.name}` : "";
-  return `${asset}${name} · ${networkLabel(token.blockchain)}`;
+  const duplicateCount = allTokens.filter((item) => item.symbol === token.symbol && item.name === token.name && item.blockchain === token.blockchain).length;
+  const identifier = duplicateCount > 1 ? ` · ID …${token.assetId.slice(-6)}` : "";
+  return `${asset}${name} · ${networkLabel(token.blockchain)}${identifier}`;
 }
 
 export default function PaymentRequestForm({ tokens }: { tokens: Token[] }) {
@@ -68,7 +70,7 @@ export default function PaymentRequestForm({ tokens }: { tokens: Token[] }) {
           aria-controls="asset-picker-options"
           onClick={() => setIsOpen((open) => !open)}
         >
-          <span>{selectedToken ? tokenLabel(selectedToken) : "Select asset or network"}</span>
+          <span>{selectedToken ? tokenLabel(selectedToken, tokens) : "Select asset or network"}</span>
           <span aria-hidden="true">{isOpen ? "⌃" : "⌄"}</span>
         </button>
         {isOpen ? (
@@ -94,7 +96,7 @@ export default function PaymentRequestForm({ tokens }: { tokens: Token[] }) {
                 >
                   <strong>{token.symbol || token.name || "Unknown asset"}</strong>
                   <span>{token.name && token.name !== token.symbol ? token.name : networkLabel(token.blockchain)}</span>
-                  <small>{networkLabel(token.blockchain)}</small>
+                  <small>{networkLabel(token.blockchain)}{tokens.filter((item) => item.symbol === token.symbol && item.name === token.name && item.blockchain === token.blockchain).length > 1 ? ` · ID …${token.assetId.slice(-6)}` : ""}</small>
                 </button>
               )) : <p className="asset-picker-empty">No matching assets. Try another token or network name.</p>}
             </div>
