@@ -49,7 +49,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ publi
   return (
     <main className="shell checkout-shell">
       <header className="checkout-header">
-        <Link className="brand" href="/">ROMBUS<span>.</span></Link>
+        <Link className="brand" href="/">RIVA<span>.</span></Link>
         <span className="muted checkout-secure">SECURE CHECKOUT</span>
       </header>
       <section className="checkout-layout">
@@ -63,7 +63,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ publi
             <div><span className="muted">Network</span><strong>{payment.destination_chain || destination?.blockchain || "Supported network"}</strong></div>
             <div><span className="muted">Merchant</span><strong>{payment.merchant_name}</strong></div>
           </div>
-          <p className="muted fine-print checkout-note">ROMBUS routes the payment to the merchant's requested asset and wallet. Your wallet remains under your control.</p>
+          <p className="muted fine-print checkout-note">RIVA routes the payment to the merchant's requested asset and wallet. Your wallet remains under your control.</p>
         </div>
         <section className="panel checkout-payment">
           {payment.status === "paid" ? (
@@ -78,7 +78,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ publi
           ) : <p className="error">Supported assets are temporarily unavailable. Refresh this page to try again.</p>}
         </section>
       </section>
-      <footer className="muted fine-print checkout-footer">ROMBUS · Move value. Without boundaries. · Powered by NEAR Intents</footer>
+      <footer className="muted fine-print checkout-footer">RIVA · Move value. Without boundaries. · Powered by NEAR Intents</footer>
     </main>
   );
 }

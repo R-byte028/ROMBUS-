@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { createPaymentRequest } from "./actions";
 
 type Token = {
@@ -10,18 +11,98 @@ type Token = {
   blockchain?: string;
 };
 
+function networkLabel(blockchain?: string) {
+  const value = (blockchain || "").trim().toLowerCase();
+  if (value === "bsc" || value === "bnb smart chain" || value === "bnb chain") {
+    return "BNB Smart Chain (BEP20)";
+  }
+  return blockchain || "Network not specified";
+}
+
+function tokenLabel(token: Token, allTokens: Token[]) {
+  const asset = token.symbol || token.name || "Unknown asset";
+  const name = token.name && token.name !== token.symbol ? ` · ${token.name}` : "";
+  const duplicateCount = allTokens.filter((item) => item.symbol === token.symbol && item.name === token.name && item.blockchain === token.blockchain).length;
+  const identifier = duplicateCount > 1 ? ` · ID …${token.assetId.slice(-6)}` : "";
+  return `${asset}${name} · ${networkLabel(token.blockchain)}${identifier}`;
+}
+
 export default function PaymentRequestForm({ tokens }: { tokens: Token[] }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [selectedAssetId, setSelectedAssetId] = useState("");
+
+  const selectedToken = tokens.find((token) => token.assetId === selectedAssetId);
+  const filteredTokens = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return tokens;
+    return tokens.filter((token) => {
+      const searchable = [
+        token.symbol,
+        token.name,
+        token.blockchain,
+        networkLabel(token.blockchain),
+        token.assetId,
+      ].filter(Boolean).join(" ").toLowerCase();
+      return searchable.includes(query) || (query.includes("bep20") && networkLabel(token.blockchain).includes("BEP20"));
+    });
+  }, [tokens, search]);
+
+  function chooseToken(token: Token) {
+    setSelectedAssetId(token.assetId);
+    setSearch("");
+    setIsOpen(false);
+  }
+
   return (
     <form action={createPaymentRequest} className="stack request-form">
       <div className="form-grid">
         <label>Request title<input className="field" name="title" placeholder="Website development invoice" required minLength={1} maxLength={120} /></label>
         <label>Amount to receive<input className="field" name="amount" type="text" inputMode="decimal" placeholder="25.00" required /></label>
       </div>
-      <label>Receive asset
-        <select className="field" name="destinationAssetId" required defaultValue="">
-          <option value="" disabled>Select an asset</option>
-          {tokens.map((token) => <option key={token.assetId} value={token.assetId}>{token.symbol || token.name || token.assetId}{token.blockchain ? ` · ${token.blockchain}` : ""}</option>)}
-        </select>
+      <label className="asset-picker-label">Receive asset
+        <input type="hidden" name="destinationAssetId" value={selectedAssetId} required />
+        <button
+          className="field asset-picker-trigger"
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+          aria-controls="asset-picker-options"
+          onClick={() => setIsOpen((open) => !open)}
+        >
+          <span>{selectedToken ? tokenLabel(selectedToken, tokens) : "Select asset or network"}</span>
+          <span aria-hidden="true">{isOpen ? "⌃" : "⌄"}</span>
+        </button>
+        {isOpen ? (
+          <div className="asset-picker-panel">
+            <input
+              className="field asset-picker-search"
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search token, network, BSC or BEP20"
+              aria-label="Search supported assets and networks"
+              autoFocus
+            />
+            <div className="asset-picker-results" id="asset-picker-options" role="listbox" aria-label="Supported assets">
+              {filteredTokens.length ? filteredTokens.map((token) => (
+                <button
+                  className={`asset-picker-option${token.assetId === selectedAssetId ? " is-selected" : ""}`}
+                  key={token.assetId}
+                  type="button"
+                  role="option"
+                  aria-selected={token.assetId === selectedAssetId}
+                  onClick={() => chooseToken(token)}
+                >
+                  <strong>{token.symbol || token.name || "Unknown asset"}</strong>
+                  <span>{token.name && token.name !== token.symbol ? token.name : networkLabel(token.blockchain)}</span>
+                  <small>{networkLabel(token.blockchain)}{tokens.filter((item) => item.symbol === token.symbol && item.name === token.name && item.blockchain === token.blockchain).length > 1 ? ` · ID …${token.assetId.slice(-6)}` : ""}</small>
+                </button>
+              )) : <p className="asset-picker-empty">No matching assets. Try another token or network name.</p>}
+            </div>
+          </div>
+        ) : null}
+        <span className="muted fine-print">Search by token name, network, BSC or BEP20. BNB Smart Chain is the BEP20 network.</span>
       </label>
       <label>Recipient wallet address<input className="field" name="recipientAddress" placeholder="Wallet address that should receive the funds" required minLength={2} maxLength={200} /></label>
       <label>Description <span className="muted">(optional)</span><textarea className="field" name="description" rows={3} maxLength={1000} placeholder="Add a short note for the payer." /></label>
