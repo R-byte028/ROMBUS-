@@ -51,7 +51,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   return (
     <main className="shell dashboard-shell">
       <header className="dashboard-header">
-        <Link className="brand" href="/">ROMBUS<span>.</span></Link>
+        <Link className="brand" href="/">RIVA<span>.</span></Link>
         <div className="account-area"><span className="muted">{profile?.wallet_address ? `Wallet ${profile.wallet_address.slice(0, 6)}…${profile.wallet_address.slice(-4)}` : authData.user.email}</span>{!profile?.wallet_address ? <WalletLogin purpose="link" compact /> : null}<form action={signOut}><button className="quiet-button" type="submit">Sign out</button></form></div>
       </header>
 
@@ -79,7 +79,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           ))}</div> : <p className="muted empty-state">No payment requests yet. Create your first one to get started.</p>}
         </section>
       </div>
-      <footer className="muted fine-print dashboard-footer">ROMBUS · Non-custodial by design · Payments are not executed from this dashboard.</footer>
+      <footer className="muted fine-print dashboard-footer">RIVA · Non-custodial by design · Payments are not executed from this dashboard.</footer>
     </main>
   );
 }

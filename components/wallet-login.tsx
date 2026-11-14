@@ -27,7 +27,7 @@ export default function WalletLogin({ purpose = "login", compact = false }: {
     try {
       const provider = window.ethereum;
       if (!provider) {
-        throw new Error("No EVM wallet was detected. Open ROMBUS in your wallet app's browser, such as MetaMask or Trust Wallet.");
+        throw new Error("No EVM wallet was detected. Open RIVA in your wallet app's browser, such as MetaMask or Trust Wallet.");
       }
 
       const accounts = await provider.request({ method: "eth_requestAccounts" });
@@ -92,7 +92,7 @@ export default function WalletLogin({ purpose = "login", compact = false }: {
         {busy ? "Waiting for wallet…" : purpose === "link" ? "Link wallet" : "Connect wallet"}
       </button>
       {error ? <p className="error" role="alert">{error}</p> : null}
-      {!compact && <p className="muted fine-print">Wallet signature only. ROMBUS never asks for your seed phrase or private key, and this sign-in message does not move funds.</p>}
+      {!compact && <p className="muted fine-print">Wallet signature only. RIVA never asks for your seed phrase or private key, and this sign-in message does not move funds.</p>}
     </div>
   );
 }
